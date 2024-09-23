@@ -1,5 +1,6 @@
 import express from "express";
 import fs from "fs/promises";
+import { type } from "os";
 import {v4} from 'uuid'
 
 const app = express();
@@ -69,26 +70,46 @@ app.get("/amn/:id", async (req, res) => {
 app.post("/amn",async (req, res) => {
     try{
         const data = JSON.parse(await fs.readFile("./data.json","utf8"))
-        data.push({
+        const newAmn ={
             id: v4(),
             ...req.body
+    }
+        data.push({
         })
         await fs.writeFile('./data.json', JSON.stringify(data),{
             encoding:'utf8'
         })
-        res.send(req.body)
+        res.send(newAmn.id)
     }catch(err){
         console.log(err)
         res.status(500).json({
             err:true,
             message:err
         })
-
     }
 });
 
-app.patch("/amn/:id", (req, res) => {
-  res.send("welcome to my amnunition Center");
+app.patch("/amn/:id",async (req, res) => {
+    try{
+        const data = JSON.parse(await fs.readFile("./data.json","utf8"))
+        const { type,status,active} = req.body
+        const amn = data.findIndex(am => am.id === req.params.id)
+        const newAmn = {
+            ...data[amn],
+            ...req.body
+        }
+        data[amn]=newAmn
+        await fs.writeFile('./data.json', JSON.stringify(data),{
+            encoding:'utf8'
+        })
+        res.send(newAmn.id)
+    }catch(err){
+        console.log(err)
+        res.status(500).json({
+            err:true,
+            message:err
+        })
+    }
 });
 
 app.listen(port, () => {
