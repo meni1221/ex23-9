@@ -1,5 +1,5 @@
 import express from "express";
-import fs from "fs/promises";
+import fs, { readFile } from "fs/promises";
 
 const app = express();
 
@@ -23,6 +23,29 @@ app.get("/amn", async (req, res) => {
   }
 });
 
+app.get("/amn/summary",async (req, res) => {
+    try{
+        const data = JSON.parse(await fs.readFile("./data.json", "utf8"));
+        const result = data.reduce((obj, curr)=>{
+            curr.active && obj.active ++,
+            curr.status && obj.in_stock ++
+            return obj
+        },{
+            active:0,
+            in_stock:0
+
+        })
+        result.sum = data.length
+        res.json(result)
+    }catch (err){
+        res.status(500).json({
+            err:true,
+            message:err
+        })
+    }
+
+});
+
 app.get("/amn/:id", async (req, res) => {
   try {
     //get data from file
@@ -39,9 +62,6 @@ app.get("/amn/:id", async (req, res) => {
   }
 });
 
-app.get("/amn/summary", (req, res) => {
-  res.send("welcome to my amnunition Center");
-});
 
 app.post("/amn", (req, res) => {
   res.send("welcome to my amnunition Center");
