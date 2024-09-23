@@ -1,7 +1,10 @@
 import express from "express";
-import fs, { readFile } from "fs/promises";
+import fs from "fs/promises";
+import {v4} from 'uuid'
 
 const app = express();
+
+app.use(express.json())
 
 const port = 7499;
 
@@ -63,8 +66,25 @@ app.get("/amn/:id", async (req, res) => {
 });
 
 
-app.post("/amn", (req, res) => {
-  res.send("welcome to my amnunition Center");
+app.post("/amn",async (req, res) => {
+    try{
+        const data = JSON.parse(await fs.readFile("./data.json","utf8"))
+        data.push({
+            id: v4(),
+            ...req.body
+        })
+        await fs.writeFile('./data.json', JSON.stringify(data),{
+            encoding:'utf8'
+        })
+        res.send(req.body)
+    }catch(err){
+        console.log(err)
+        res.status(500).json({
+            err:true,
+            message:err
+        })
+
+    }
 });
 
 app.patch("/amn/:id", (req, res) => {
