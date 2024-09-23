@@ -1,11 +1,11 @@
 import express from "express";
 import fs from "fs/promises";
 import { type } from "os";
-import {v4} from 'uuid'
+import { v4 } from "uuid";
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
 const port = 7499;
 
@@ -27,27 +27,27 @@ app.get("/amn", async (req, res) => {
   }
 });
 
-app.get("/amn/summary",async (req, res) => {
-    try{
-        const data = JSON.parse(await fs.readFile("./data.json", "utf8"));
-        const result = data.reduce((obj, curr)=>{
-            curr.active && obj.active ++,
-            curr.status && obj.in_stock ++
-            return obj
-        },{
-            active:0,
-            in_stock:0
-
-        })
-        result.sum = data.length
-        res.json(result)
-    }catch (err){
-        res.status(500).json({
-            err:true,
-            message:err
-        })
-    }
-
+app.get("/amn/summary", async (req, res) => {
+  try {
+    const data = JSON.parse(await fs.readFile("./data.json", "utf8"));
+    const result = data.reduce(
+      (obj, curr) => {
+        curr.active && obj.active++, curr.status && obj.in_stock++;
+        return obj;
+      },
+      {
+        active: 0,
+        in_stock: 0,
+      }
+    );
+    result.sum = data.length;
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({
+      err: true,
+      message: err,
+    });
+  }
 });
 
 app.get("/amn/:id", async (req, res) => {
@@ -66,50 +66,48 @@ app.get("/amn/:id", async (req, res) => {
   }
 });
 
-
-app.post("/amn",async (req, res) => {
-    try{
-        const data = JSON.parse(await fs.readFile("./data.json","utf8"))
-        const newAmn ={
-            id: v4(),
-            ...req.body
-    }
-        data.push({
-        })
-        await fs.writeFile('./data.json', JSON.stringify(data),{
-            encoding:'utf8'
-        })
-        res.send(newAmn.id)
-    }catch(err){
-        console.log(err)
-        res.status(500).json({
-            err:true,
-            message:err
-        })
-    }
+app.post("/amn", async (req, res) => {
+  try {
+    const data = JSON.parse(await fs.readFile("./data.json", "utf8"));
+    const newAmn = {
+      id: v4(),
+      ...req.body,
+    };
+    data.push({});
+    await fs.writeFile("./data.json", JSON.stringify(data), {
+      encoding: "utf8",
+    });
+    res.send(newAmn.id);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      err: true,
+      message: err,
+    });
+  }
 });
 
-app.patch("/amn/:id",async (req, res) => {
-    try{
-        const data = JSON.parse(await fs.readFile("./data.json","utf8"))
-        const { type,status,active} = req.body
-        const amn = data.findIndex(am => am.id === req.params.id)
-        const newAmn = {
-            ...data[amn],
-            ...req.body
-        }
-        data[amn]=newAmn
-        await fs.writeFile('./data.json', JSON.stringify(data),{
-            encoding:'utf8'
-        })
-        res.send(newAmn.id)
-    }catch(err){
-        console.log(err)
-        res.status(500).json({
-            err:true,
-            message:err
-        })
-    }
+app.patch("/amn/:id", async (req, res) => {
+  try {
+    const data = JSON.parse(await fs.readFile("./data.json", "utf8"));
+    const { type, status, active } = req.body;
+    const amn = data.findIndex((am) => am.id === req.params.id);
+    const newAmn = {
+      ...data[amn],
+      ...req.body,
+    };
+    data[amn] = newAmn;
+    await fs.writeFile("./data.json", JSON.stringify(data), {
+      encoding: "utf8",
+    });
+    res.send(newAmn.id);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      err: true,
+      message: err,
+    });
+  }
 });
 
 app.listen(port, () => {
